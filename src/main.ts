@@ -5,26 +5,27 @@ export abstract class Provider {
 type ProviderConstructor = new (...args: any[]) => Provider
 
 export class Container {
+    static container: Container = new Container();
     private providers: Map<string, ProviderConstructor> = new Map();
     private instances: Map<string, Provider> = new Map();
 
     register(provider: ProviderConstructor, token?: string) {
         if (token) {
-            this.providers.set(token, provider);
+            Container.container.providers.set(token, provider);
         } else {
-            this.providers.set(provider.name, provider);
+            Container.container.providers.set(provider.name, provider);
         }
     }
 
     resolve<T extends Provider>(token: string): T {
-        const provider = this.providers.get(token);
+        const provider = Container.container.providers.get(token);
         if (!provider) {
             throw new Error(`No provider found for token ${token}`);
         } else {
-            const instance = this.instances.get(token);
+            const instance = Container.container.instances.get(token);
             if (!instance) {
-                this.instances.set(token, new provider());
-                return <T>this!.instances!.get(token);
+                Container.container.instances.set(token, new provider());
+                return <T>Container.container!.instances!.get(token);
             }
             return <T>instance;
         }

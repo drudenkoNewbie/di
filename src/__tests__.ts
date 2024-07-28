@@ -17,7 +17,7 @@ class Test {
             this.testCb();
             console.log(`Test ${this.name} finished`);
         } catch (error) {
-            console.error(`Test "${this.name}" failed`);
+            console.error(`Test "${this.name}" failed`, error);
         }
     }
 }
@@ -53,12 +53,11 @@ const tests: Test[] = [
                 return this.name;
             }
         }
+
+        Container.container.register(ServiceA);
+        Container.container.register(ServiceB);
         
-        const container = new Container();
-        container.register(ServiceA);
-        container.register(ServiceB);
-        
-        @injectClasses(container, { serviceA: ServiceA, serviceB: ServiceB })
+        @injectClasses({ serviceA: ServiceA, serviceB: ServiceB })
         class ExampleClass extends Provider {
             public serviceA!: ServiceA;
             public serviceB!: ServiceB;
@@ -72,15 +71,15 @@ const tests: Test[] = [
                 this.serviceB.getServiceName();
             }
         }
+
+        Container.container.register(ExampleClass);
+
         
-        container.register(ExampleClass);
-        
-        const exampleInstance = container.resolve<ExampleClass>(ExampleClass.name);
+        const exampleInstance = Container.container.resolve<ExampleClass>(ExampleClass.name);
         exampleInstance.getServiceNames();
     }),
     new Test('should register classes in container', () => {
-        const container = new Container();
-        @injectable(container)
+        @injectable()
         class ServiceA extends Provider {
             public name = 'ServiceA';
         
@@ -89,7 +88,7 @@ const tests: Test[] = [
             }
         }
         
-        @injectable(container)
+        @injectable()
         class ServiceB extends Provider {
             public name = 'ServiceB';
         
@@ -98,8 +97,8 @@ const tests: Test[] = [
             }
         }
         
-        @injectable(container)
-        @injectClasses(container, { serviceA: ServiceA, serviceB: ServiceB })
+        @injectable()
+        @injectClasses({ serviceA: ServiceA, serviceB: ServiceB })
         class ExampleClass extends Provider {
             public serviceA!: ServiceA;
             public serviceB!: ServiceB;
@@ -114,7 +113,7 @@ const tests: Test[] = [
             }
         }
         
-        const exampleInstance = container.resolve<ExampleClass>(ExampleClass.name);
+        const exampleInstance = Container.container.resolve<ExampleClass>(ExampleClass.name);
         exampleInstance.getServiceNames();
     }),
 ];
