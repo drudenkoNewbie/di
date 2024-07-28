@@ -15,3 +15,10 @@ export function injectClasses(container: Container, classMap: { [key: string]: n
         };
     };
 }
+
+export function injectable (container: Container) {
+    return function<T extends { new (...args: any[]): {} }>(constructor: T) {
+        container.register(constructor);
+        return constructor;
+    };
+}

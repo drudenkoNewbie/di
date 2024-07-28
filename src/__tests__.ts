@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import { Container, Provider } from "./main";
-import { injectClasses } from "./decorators";
+import { injectable, injectClasses } from "./decorators";
 
 class Test {
     private name: string;
@@ -37,7 +37,7 @@ const tests: Test[] = [
 
         assert.strictEqual(instance1, instance2);
     }),
-    new Test('should inject and resolve to same instance with injected classes methods', () => {
+    new Test('should resolve to instance with injected classes methods', () => {
         class ServiceA extends Provider {
             public name = 'ServiceA';
         
@@ -77,7 +77,46 @@ const tests: Test[] = [
         
         const exampleInstance = container.resolve<ExampleClass>(ExampleClass.name);
         exampleInstance.getServiceNames();
-    })
+    }),
+    new Test('should register classes in container', () => {
+        const container = new Container();
+        @injectable(container)
+        class ServiceA extends Provider {
+            public name = 'ServiceA';
+        
+            getServiceName() {
+                return this.name;
+            }
+        }
+        
+        @injectable(container)
+        class ServiceB extends Provider {
+            public name = 'ServiceB';
+        
+            getServiceName() {
+                return this.name;
+            }
+        }
+        
+        @injectable(container)
+        @injectClasses(container, { serviceA: ServiceA, serviceB: ServiceB })
+        class ExampleClass extends Provider {
+            public serviceA!: ServiceA;
+            public serviceB!: ServiceB;
+        
+            constructor() {
+                super();
+            }
+        
+            getServiceNames() {
+                this.serviceA.getServiceName();
+                this.serviceB.getServiceName();
+            }
+        }
+        
+        const exampleInstance = container.resolve<ExampleClass>(ExampleClass.name);
+        exampleInstance.getServiceNames();
+    }),
 ];
 
 for (const test of tests) {
