@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
-import { Container } from "./main";
+import { Container, Provider } from "./main";
+import { injectClasses } from "./decorators";
 
 class Test {
     private name: string;
@@ -35,6 +36,47 @@ const tests: Test[] = [
         const instance2 = container.resolve(A.name);
 
         assert.strictEqual(instance1, instance2);
+    }),
+    new Test('should inject and resolve to same instance with injected classes methods', () => {
+        class ServiceA extends Provider {
+            public name = 'ServiceA';
+        
+            getServiceName() {
+                return this.name;
+            }
+        }
+        
+        class ServiceB extends Provider {
+            public name = 'ServiceB';
+        
+            getServiceName() {
+                return this.name;
+            }
+        }
+        
+        const container = new Container();
+        container.register(ServiceA);
+        container.register(ServiceB);
+        
+        @injectClasses(container, { serviceA: ServiceA, serviceB: ServiceB })
+        class ExampleClass extends Provider {
+            public serviceA!: ServiceA;
+            public serviceB!: ServiceB;
+        
+            constructor() {
+                super();
+            }
+        
+            getServiceNames() {
+                this.serviceA.getServiceName();
+                this.serviceB.getServiceName();
+            }
+        }
+        
+        container.register(ExampleClass);
+        
+        const exampleInstance = container.resolve<ExampleClass>(ExampleClass.name);
+        exampleInstance.getServiceNames();
     })
 ];
 

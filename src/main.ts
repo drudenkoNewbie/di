@@ -1,4 +1,6 @@
-abstract class Provider {}
+export abstract class Provider {
+    constructor(...args: ProviderConstructor[]) {}
+}
 
 type ProviderConstructor = new (...args: any[]) => Provider
 
@@ -14,15 +16,17 @@ export class Container {
         }
     }
 
-    resolve(token: string) {
+    resolve<T extends Provider>(token: string): T {
         const provider = this.providers.get(token);
         if (!provider) {
             throw new Error(`No provider found for token ${token}`);
         } else {
-            if (!this.instances.has(token)) {
+            const instance = this.instances.get(token);
+            if (!instance) {
                 this.instances.set(token, new provider());
+                return <T>this!.instances!.get(token);
             }
-            return this.instances.get(token);
+            return <T>instance;
         }
     }
 }
