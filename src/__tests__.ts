@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import { Container, Provider } from "./main";
-import { injectable, injectClasses } from "./decorators";
+import { inject, injectable, injectClasses } from "./decorators";
 
 class Test {
     private name: string;
@@ -98,10 +98,11 @@ const tests: Test[] = [
         }
         
         @injectable()
-        @injectClasses({ serviceA: ServiceA, serviceB: ServiceB })
         class ExampleClass extends Provider {
-            public serviceA!: ServiceA;
-            public serviceB!: ServiceB;
+            @inject(ServiceA)
+            private serviceA!: ServiceA;
+            @inject(ServiceB)
+            private serviceB!: ServiceB;
         
             constructor() {
                 super();
